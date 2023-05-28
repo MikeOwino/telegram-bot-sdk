@@ -95,7 +95,7 @@ test('a command with required and optional pattern variables is parsed correctly
         ],
     ]);
     $entity = $update->getMessage()->entities->get(0)->toArray();
-    $this->command->setPattern('{fname} {lname} {age?} {weight?}');
+    $this->command->setPattern('{fname} {lname} {age} {weight}');
 
     $this->command->make($this->api, $update, $entity);
 
@@ -121,7 +121,12 @@ test('a command with more required pattern variables than exists in update messa
 
     $this->command->make($this->api, $update, $entity);
 
-    expect($this->command->getArguments())->toEqual([]);
+    expect($this->command->getArguments())->toEqual([
+        'fname' => 'John',
+        'lname' => 'Doe',
+        'age' => '77',
+        'weight' => null,
+    ]);
 });
 
 test('a command with custom regex set as pattern will return an array with the match value', function () {
@@ -139,7 +144,7 @@ test('a command with custom regex set as pattern will return an array with the m
         ],
     ]);
     $entity = $update->getMessage()->entities->get(0)->toArray();
-    $this->command->setPattern('.+');
+    $this->command->setPattern('{custom:.+}');
 
     $this->command->make($this->api, $update, $entity);
 
@@ -161,7 +166,7 @@ test('a command with more advance custom regex set as pattern will return an arr
         ],
     ]);
     $entity = $update->getMessage()->entities->get(0)->toArray();
-    $this->command->setPattern('[a-z]{2}\d{3}\s+?\d{2}/\d{2}/\d{2,4}');
+    $this->command->setPattern('{ custom : [a-z]{2}\d{3}\s+?\d{2}/\d{2}/\d{2,4}}');
 
     $this->command->make($this->api, $update, $entity);
 
@@ -208,5 +213,8 @@ it('checks the arguments can be detected in a message with multiple commands tha
     //This command should not be triggered for entity "2". But if it is, the arguments should be blank.
     $entity2 = $update->getMessage()->entities->get(2)->toArray();
     $this->command->make($this->api, $update, $entity2);
-    expect($this->command->getArguments())->toEqual([]);
+    expect($this->command->getArguments())->toEqual([
+        'fname' => null,
+        'lname' => null,
+    ]);
 });
